@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CareOps — Test Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+
+    <header class="hero">
+      <p class="brand">CareOps</p>
+      <h1>Test Console</h1>
+      <p class="lede">
+        Browser checklist for CareOS + OCR. Synthetic healthcare demo data only —
+        no clinical use.
+      </p>
+      <div class="status-row" id="statusRow">
+        <span class="pill" id="careosPill">CareOS …</span>
+        <span class="pill" id="ocrPill">OCR …</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" id="checklist">
+        <h2>Customer test checklist</h2>
+        <p class="hint">Run steps in order. Each action hits the live mock APIs.</p>
+        <ol class="steps">
+          <li>
+            <div class="step-head">
+              <strong>1. Health</strong>
+              <button type="button" data-action="health">Check services</button>
+            </div>
+          </li>
+          <li>
+            <div class="step-head">
+              <strong>2. Clients &amp; compliance</strong>
+              <button type="button" data-action="clients">Load lists</button>
+            </div>
+          </li>
+          <li>
+            <div class="step-head">
+              <strong>3. OCR sample GP letter</strong>
+              <button type="button" data-action="ocr">Run OCR</button>
+            </div>
+          </li>
+          <li>
+            <div class="step-head">
+              <strong>4. Address change (pending → apply)</strong>
+              <button type="button" data-action="address">Propose &amp; apply</button>
+            </div>
+          </li>
+          <li>
+            <div class="step-head">
+              <strong>5. Roster overlaps (Eastwood)</strong>
+              <button type="button" data-action="roster">Scan visits</button>
+            </div>
+          </li>
+          <li>
+            <div class="step-head">
+              <strong>6. Run all</strong>
+              <button type="button" class="primary" data-action="all">Full walkthrough</button>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Live result</h2>
+          <button type="button" class="ghost" id="clearLog">Clear</button>
+        </div>
+        <pre id="log" aria-live="polite">Ready. Open this page after CareOS (and OCR) are running.</pre>
+      </section>
+
+      <section class="panel grids">
+        <div>
+          <h2>Clients</h2>
+          <div id="clientsView" class="table-wrap empty">—</div>
+        </div>
+        <div>
+          <h2>Open compliance</h2>
+          <div id="complianceView" class="table-wrap empty">—</div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Also available: <code>npm run demo:full</code>, <code>npm run demo:mcp</code>, Cursor MCP,
+        <code>npm run docker:test</code>. See README → How to test.
+      </p>
+    </footer>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

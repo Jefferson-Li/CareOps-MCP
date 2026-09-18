@@ -1,0 +1,36 @@
+{
+  "name": "careops-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CareOps MCP — production-shaped MCP layer over a mock healthcare CareOS platform",
+  "scripts": {
+    "careos": "tsx src/careos/server.ts",
+    "careos:seed": "tsx src/careos/seed.ts",
+    "mcp": "tsx src/mcp/index.ts",
+    "ocr": ".venv/bin/python workers/ocr/app.py",
+    "ocr:sample": ".venv/bin/python workers/ocr/generate_sample.py",
+    "demo:compliance": "tsx scripts/demo-compliance.ts",
+    "demo:full": "tsx scripts/demo-full.ts",
+    "demo:mcp": "tsx scripts/demo-mcp-client.ts",
+    "typecheck": "tsc --noEmit",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:test": "docker compose -f docker-compose.yml -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from smoke",
+    "docker:prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up --build -d"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "tsx": "^4.19.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "careops": {
+      "command": "npx",
+      "args": ["tsx", "src/mcp/index.ts"],
+      "cwd": "/ABSOLUTE/PATH/TO/CareOps-MCP",
+      "env": {
+        "CAREOS_URL": "http://127.0.0.1:3847",
+        "OCR_URL": "http://127.0.0.1:3850",
+        "MCP_ACTOR": "cursor"
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Build / cache
+dist/
+build/
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Runtime / generated data — may contain client PII + audit trails
+data/*
+!data/.gitkeep
+samples/upload-*
+
+# Secrets & credentials (never commit real env files)
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+id_rsa
+id_rsa.*
+*.keystore
+
+# Docker / deploy local overrides & secrets
+docker-compose.override.yml
+deploy/secrets/
+*.env.local
+.env.prod
+.env.test
+
+# Local IDE / MCP config (absolute paths, optional tokens)
+.cursor/
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs & OS junk
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db

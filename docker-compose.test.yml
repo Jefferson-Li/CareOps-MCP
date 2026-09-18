@@ -1,0 +1,43 @@
+# Test / CI stack: ephemeral data, required token, smoke runner.
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from smoke
+
+services:
+  careos:
+    environment:
+      NODE_ENV: test
+      CAREOS_SEED_ON_START: "1"
+    volumes:
+      - careos-test-data:/app/data
+    restart: "no"
+
+  ocr:
+    environment:
+      OCR_ADMIN_ENABLED: "1"
+      OCR_RESTRICT_PATH: "1"
+      OCR_MODE: auto
+    restart: "no"
+
+  smoke:
+    image: careops-careos:local
+    depends_on:
+      careos:
+        condition: service_healthy
+      ocr:
+        condition: service_healthy
+    environment:
+      CAREOS_URL: http://careos:3847
+      OCR_URL: http://ocr:3850
+      NODE_ENV: test
+      CAREOPS_MCP_TOKEN: ${CAREOPS_MCP_TOKEN:-test-token-change-me}
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-test-token-change-me}
+    volumes:
+      - ./samples:/app/samples:ro
+      - ./docker/smoke.sh:/smoke.sh:ro
+    networks:
+      - careops
+    entrypoint: ["/bin/sh", "/smoke.sh"]
+    restart: "no"
+
+volumes:
+  careos-test-data:

@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1
+
+FROM python:3.12-slim-bookworm
+
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    OCR_HOST=0.0.0.0 \
+    OCR_PORT=3850 \
+    OCR_MODE=auto
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+       curl \
+       tesseract-ocr \
+       tesseract-ocr-eng \
+  && rm -rf /var/lib/apt/lists/* \
+  && groupadd --system careops \
+  && useradd --system --gid careops --create-home careops
+
+COPY workers/ocr/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt pytesseract \
+  && rm /tmp/requirements.txt
+
+COPY --chown=careops:careops workers/ocr ./workers/ocr
+COPY --chown=careops:careops samples ./samples
+
+USER careops
+EXPOSE 3850
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=5 \
+  CMD curl -fsS "http://127.0.0.1:${OCR_PORT:-3850}/health" || exit 1
+
+CMD ["python", "workers/ocr/app.py"]

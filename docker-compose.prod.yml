@@ -1,0 +1,62 @@
+# Production-shaped overlay. Do not commit real secrets — use .env.prod (gitignored).
+# Usage:
+#   cp .env.prod.example .env.prod   # then edit secrets
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up --build -d
+
+services:
+  careos:
+    image: careops-careos:${IMAGE_TAG:-prod}
+    environment:
+      NODE_ENV: production
+      CAREOS_HOST: "0.0.0.0"
+      CAREOS_PORT: "3847"
+      CAREOS_SEED_ON_START: "${CAREOS_SEED_ON_START:-0}"
+      OCR_URL: http://ocr:3850
+    ports:
+      - "${CAREOS_HOST_PORT:-127.0.0.1:3847}:3847"
+    volumes:
+      - careos-prod-data:/app/data
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  ocr:
+    image: careops-ocr:${IMAGE_TAG:-prod}
+    environment:
+      NODE_ENV: production
+      OCR_HOST: "0.0.0.0"
+      OCR_PORT: "3850"
+      OCR_MODE: "${OCR_MODE:-auto}"
+      OCR_ADMIN_ENABLED: "0"
+      OCR_RESTRICT_PATH: "1"
+    ports:
+      - "${OCR_HOST_PORT:-127.0.0.1:3850}:3850"
+    # Use image-baked samples only (no host bind mount).
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  mcp:
+    profiles: ["mcp"]
+    image: careops-careos:${IMAGE_TAG:-prod}
+    environment:
+      NODE_ENV: production
+      CAREOS_URL: http://careos:3847
+      OCR_URL: http://ocr:3850
+      MCP_ACTOR: ${MCP_ACTOR:-prod}
+      CAREOPS_MCP_TOKEN: ${CAREOPS_MCP_TOKEN:?CAREOPS_MCP_TOKEN is required in production}
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:?MCP_AUTH_TOKEN is required in production}
+    volumes:
+      - careos-prod-data:/app/data
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  careos-prod-data:
