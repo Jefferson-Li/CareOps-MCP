@@ -1,5 +1,7 @@
 # CareOps MCP
 
+[![CI](https://github.com/Jefferson-Li/CareOps-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Jefferson-Li/CareOps-MCP/actions/workflows/ci.yml)
+
 Portfolio project for an **AI Engineer / Software Integrator** role in the **healthcare** industry:
 
 > Quickly map existing clinical systems, then ship production-ready Claude **MCP** tools that automate operational bottlenecks without disrupting daily care.
@@ -159,7 +161,7 @@ Real files `.env`, `.env.test`, `.env.prod` are gitignored.
 make test
 ```
 
-That builds the unit-test image and runs `docker compose --profile test run --build --rm test`. The suite fails if TypeScript or Python coverage is below 100%. The test image takes Node and Python from their official images and does not run `apt`.
+That builds the unit-test image and runs `docker compose --profile test run --build --rm test`. The suite fails if TypeScript or Python coverage is below 100%. The test image takes Node and Python from their official images and does not run `apt`. The same `make test` command runs in GitHub Actions on every pull request and on pushes to `main`.
 
 HTML reports are written on the host even when the gate fails:
 
@@ -400,7 +402,7 @@ CAREOS_SEED_ON_START=1 npm run docker:prod
 make test
 ```
 
-會建置測試映像並執行 `docker compose --profile test run --build --rm test`。覆蓋率低於 100% 時指令會失敗。測試映像直接使用官方 Node 與 Python 映像，建置時不執行 `apt`。
+會建置測試映像並執行 `docker compose --profile test run --build --rm test`。覆蓋率低於 100% 時指令會失敗。測試映像直接使用官方 Node 與 Python 映像，建置時不執行 `apt`。GitHub Actions 在每個 pull request 以及推送到 `main` 時也會執行同一個 `make test`。
 
 HTML 報告會寫到本機（未達 100% 時也會留下報告，但指令仍失敗）：
 
