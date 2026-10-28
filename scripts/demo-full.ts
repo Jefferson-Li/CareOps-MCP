@@ -8,13 +8,14 @@ import { checkComplianceGaps, searchClientContext } from "../src/pipelines/compl
 import { ingestCareDocument, ocrCareDocument, proposeAddressUpdate } from "../src/pipelines/document-ingest.js";
 import { optimizeWeeklyRoster } from "../src/pipelines/roster.js";
 import { appendAudit, hashArgs } from "../src/shared/db.js";
+import { isDirectRun } from "../src/shared/entrypoint.js";
 
 function step(title: string, data: unknown) {
   console.log(`\n=== ${title} ===`);
   console.log(JSON.stringify(data, null, 2));
 }
 
-async function main() {
+export async function main(): Promise<void> {
   console.log("CareOps full demo starting…");
 
   const careHealth = await careos.health();
@@ -71,7 +72,11 @@ async function main() {
   console.log('  "Use check_compliance_gaps and ocr_care_document on samples/gp-letter-aisha.png"');
 }
 
-main().catch((err) => {
+export function reportCliError(err: unknown): void {
   console.error(err);
   process.exit(1);
-});
+}
+
+if (isDirectRun(import.meta.url)) {
+  main().catch(reportCliError);
+}

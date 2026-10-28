@@ -30,9 +30,18 @@ app.add_middleware(
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-SAMPLES = ROOT / "samples"
 HOST = os.environ.get("OCR_HOST", "127.0.0.1")
 PORT = int(os.environ.get("OCR_PORT", "3850"))
+
+
+def samples_dir() -> Path:
+    """Sample images live in samples/ unless OCR_SAMPLES_DIR overrides it."""
+    override = os.environ.get("OCR_SAMPLES_DIR")
+    if override:
+        return Path(override)
+    return ROOT / "samples"
+
+
 RESTRICT_PATH = os.environ.get("OCR_RESTRICT_PATH", "0").lower() in {"1", "true", "yes"}
 ADMIN_ENABLED = os.environ.get("OCR_ADMIN_ENABLED", "1").lower() in {"1", "true", "yes"}
 
@@ -73,7 +82,7 @@ def resolve_path(raw: str) -> Path:
     resolved = p.resolve()
     if RESTRICT_PATH:
         try:
-            resolved.relative_to(SAMPLES.resolve())
+            resolved.relative_to(samples_dir().resolve())
         except ValueError as err:
             raise HTTPException(
                 status_code=403,
@@ -171,8 +180,8 @@ def ocr_path(body: OcrPathRequest) -> OcrResult:
 
 @app.post("/ocr/upload", response_model=OcrResult)
 async def ocr_upload(file: UploadFile = File(...)) -> OcrResult:
-    SAMPLES.mkdir(parents=True, exist_ok=True)
-    dest = SAMPLES / f"upload-{file.filename or 'doc.png'}"
+    samples_dir().mkdir(parents=True, exist_ok=True)
+    dest = samples_dir() / f"upload-{file.filename or 'doc.png'}"
     dest.write_bytes(await file.read())
     try:
         return ocr_file(dest)
@@ -182,8 +191,8 @@ async def ocr_upload(file: UploadFile = File(...)) -> OcrResult:
 
 def ensure_sample_image() -> Path:
     """Create a simple GP-letter PNG + sidecar for portable demos."""
-    SAMPLES.mkdir(parents=True, exist_ok=True)
-    out = SAMPLES / "gp-letter-aisha.png"
+    samples_dir().mkdir(parents=True, exist_ok=True)
+    out = samples_dir() / "gp-letter-aisha.png"
     text = "\n".join(
         [
             "Eastwood Family Medical Centre",
@@ -204,7 +213,7 @@ def ensure_sample_image() -> Path:
         draw.text((24, y), line, fill=(20, 20, 20), font=font)
         y += 36
     img.save(out)
-    (SAMPLES / "gp-letter-aisha.ocr.txt").write_text(text + "\n", encoding="utf-8")
+    (samples_dir() / "gp-letter-aisha.ocr.txt").write_text(text + "\n", encoding="utf-8")
     return out
 
 

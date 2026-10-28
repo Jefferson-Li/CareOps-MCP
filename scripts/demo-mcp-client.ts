@@ -4,16 +4,20 @@
  */
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
+import { isDirectRun } from "../src/shared/entrypoint.js";
 
-function cleanEnv(extra: Record<string, string>): Record<string, string> {
+export function cleanEnv(
+  extra: Record<string, string>,
+  env: NodeJS.ProcessEnv = process.env,
+): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(process.env)) {
+  for (const [k, v] of Object.entries(env)) {
     if (typeof v === "string") out[k] = v;
   }
   return { ...out, ...extra };
 }
 
-async function main() {
+export async function main(): Promise<void> {
   const transport = new StdioClientTransport({
     command: "npx",
     args: ["tsx", "src/mcp/index.ts"],
@@ -53,7 +57,11 @@ async function main() {
   console.log("\nMCP stdio demo OK (same transport Cursor uses)");
 }
 
-main().catch((err) => {
+export function reportCliError(err: unknown): void {
   console.error(err);
   process.exit(1);
-});
+}
+
+if (isDirectRun(import.meta.url)) {
+  main().catch(reportCliError);
+}

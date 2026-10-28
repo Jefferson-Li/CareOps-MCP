@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 import type { AuditEntry, CareOsDb } from "./types.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
-export const DATA_DIR = join(root, "data");
+/** Override with CAREOS_DATA_DIR in tests; default remains the repo data/ directory. */
+export const DATA_DIR = process.env.CAREOS_DATA_DIR ?? join(root, "data");
 export const DB_PATH = join(DATA_DIR, "careos.json");
 export const AUDIT_PATH = join(DATA_DIR, "audit.jsonl");
 

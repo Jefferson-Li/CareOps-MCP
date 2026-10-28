@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { saveDb, emptyDb, ensureDataDir, DB_PATH } from "../shared/db.js";
+import { isDirectRun } from "../shared/entrypoint.js";
 import type { CareOsDb } from "../shared/types.js";
 
 function daysFromNow(n: number): string {
@@ -8,7 +9,7 @@ function daysFromNow(n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function isoAt(dayOffset: number, hour: number, minute = 0): string {
+function isoAt(dayOffset: number, hour: number, minute: number): string {
   const d = new Date();
   d.setDate(d.getDate() + dayOffset);
   d.setHours(hour, minute, 0, 0);
@@ -175,8 +176,17 @@ export function buildSeedDb(): CareOsDb {
   return db;
 }
 
-ensureDataDir();
-const db = buildSeedDb();
-saveDb(db);
-console.error(`Seeded CareOS database at ${DB_PATH}`);
-console.error(`Clients: ${db.clients.length}, visits: ${db.visits.length}, compliance gaps: ${db.compliance.filter((c) => !c.done_flg).length}`);
+export function runSeed(): CareOsDb {
+  ensureDataDir();
+  const db = buildSeedDb();
+  saveDb(db);
+  console.error(`Seeded CareOS database at ${DB_PATH}`);
+  console.error(
+    `Clients: ${db.clients.length}, visits: ${db.visits.length}, compliance gaps: ${db.compliance.filter((c) => !c.done_flg).length}`,
+  );
+  return db;
+}
+
+if (isDirectRun(import.meta.url)) {
+  runSeed();
+}

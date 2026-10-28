@@ -1,14 +1,33 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadDb, saveDb } from "../shared/db.js";
+import { isDirectRun } from "../shared/entrypoint.js";
 import type { CareOsDb, ClientRecord, PendingChange, VisitSlot } from "../shared/types.js";
 
-const PORT = Number(process.env.CAREOS_PORT ?? 3847);
-const HOST = process.env.CAREOS_HOST ?? "127.0.0.1";
-const OCR_URL = process.env.OCR_URL ?? "http://127.0.0.1:3850";
+function bindPort(): number {
+  return Number(process.env.CAREOS_PORT ?? 3847);
+}
+
+function bindHost(): string {
+  return process.env.CAREOS_HOST ?? "127.0.0.1";
+}
+
+function ocrUrl(): string {
+  return process.env.OCR_URL ?? "http://127.0.0.1:3850";
+}
+
+export function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+export function listenUrl(hostname: string, port: number): string {
+  const shown = hostname === "0.0.0.0" ? "127.0.0.1" : hostname;
+  return `http://${shown}:${port}/`;
+}
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const WEB_ROOT = join(ROOT, "web");
 
@@ -100,15 +119,15 @@ function findRosterConflicts(zone?: string) {
 
 async function fetchOcrHealth(): Promise<unknown> {
   try {
-    const res = await fetch(`${OCR_URL}/health`);
+    const res = await fetch(`${ocrUrl()}/health`);
     return await res.json();
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return { ok: false, error: errorMessage(err) };
   }
 }
 
 async function proxyOcrPath(path: string): Promise<unknown> {
-  const res = await fetch(`${OCR_URL}/ocr/path`, {
+  const res = await fetch(`${ocrUrl()}/ocr/path`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path }),
@@ -124,7 +143,7 @@ async function proxyOcrPath(path: string): Promise<unknown> {
   return data;
 }
 
-function tryServeStatic(pathname: string, res: ServerResponse): boolean {
+export function tryServeStatic(pathname: string, res: ServerResponse): boolean {
   let rel = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
   if (rel.startsWith("web/")) rel = rel.slice(4);
   const full = normalize(join(WEB_ROOT, rel));
@@ -139,7 +158,7 @@ function tryServeStatic(pathname: string, res: ServerResponse): boolean {
   return true;
 }
 
-const routes: { method: string; pattern: string; handler: RouteHandler }[] = [
+export const routes: { method: string; pattern: string; handler: RouteHandler }[] = [
   {
     method: "GET",
     pattern: "/health",
@@ -152,7 +171,7 @@ const routes: { method: string; pattern: string; handler: RouteHandler }[] = [
       send(res, 200, {
         service: "careos-mock",
         test_console: "/",
-        ocr_url: OCR_URL,
+        ocr_url: ocrUrl(),
         sample_image: "samples/gp-letter-aisha.png",
         notes: "Open / in a browser for the customer test console.",
       }),
@@ -165,7 +184,7 @@ const routes: { method: string; pattern: string; handler: RouteHandler }[] = [
       send(res, 200, {
         careos: { ok: true, service: "careos-mock" },
         ocr,
-        ocr_url: OCR_URL,
+        ocr_url: ocrUrl(),
       });
     },
   },
@@ -181,7 +200,7 @@ const routes: { method: string; pattern: string; handler: RouteHandler }[] = [
         const result = await proxyOcrPath(path);
         send(res, 200, result);
       } catch (err) {
-        send(res, 502, { error: err instanceof Error ? err.message : String(err) });
+        send(res, 502, { error: errorMessage(err) });
       }
     },
   },
@@ -314,7 +333,7 @@ const routes: { method: string; pattern: string; handler: RouteHandler }[] = [
         saveDb(db);
         send(res, 200, { change, client: db.clients.find((c) => c.cl_id === change.payload.cl_id) });
       } catch (err) {
-        send(res, 400, { error: err instanceof Error ? err.message : String(err) });
+        send(res, 400, { error: errorMessage(err) });
       }
     },
   },
@@ -357,17 +376,18 @@ function applyChange(db: CareOsDb, change: PendingChange): void {
   throw new Error(`unsupported_tool:${change.tool}`);
 }
 
-const server = createServer(async (req, res) => {
+export async function handleCareOsRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     });
-    return res.end();
+    res.end();
+    return;
   }
 
-  const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
+  const url = new URL(req.url ?? "/", `http://localhost:${bindPort()}`);
 
   if (req.method === "GET" && tryServeStatic(url.pathname, res)) {
     return;
@@ -385,15 +405,32 @@ const server = createServer(async (req, res) => {
     const params = matchPath(route.pattern, url.pathname);
     if (!params) continue;
     try {
-      return await route.handler(req, res, params, body);
+      await route.handler(req, res, params, body);
+      return;
     } catch (err) {
-      return send(res, 500, { error: err instanceof Error ? err.message : String(err) });
+      return send(res, 500, { error: errorMessage(err) });
     }
   }
   send(res, 404, { error: "not_found", path: url.pathname });
-});
+}
 
-server.listen(PORT, HOST, () => {
-  console.error(`CareOS mock API listening on http://${HOST}:${PORT}`);
-  console.error(`Test console: http://${HOST === "0.0.0.0" ? "127.0.0.1" : HOST}:${PORT}/`);
-});
+export function createCareOsServer(): Server {
+  return createServer((req, res) => {
+    void handleCareOsRequest(req, res);
+  });
+}
+
+export function startCareOsServer(): Server {
+  const server = createCareOsServer();
+  const host = bindHost();
+  const port = bindPort();
+  server.listen(port, host, () => {
+    console.error(`CareOS mock API listening on http://${host}:${port}`);
+    console.error(`Test console: ${listenUrl(host, port)}`);
+  });
+  return server;
+}
+
+if (isDirectRun(import.meta.url)) {
+  startCareOsServer();
+}
