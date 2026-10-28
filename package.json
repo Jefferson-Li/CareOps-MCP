@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --coverage",
     "test:python": "python3 -m pytest",
-    "test:coverage": "vitest run --coverage && python3 -m pytest",
+    "test:coverage": "sh scripts/test-coverage.sh",
     "docker:up": "docker compose up --build -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
