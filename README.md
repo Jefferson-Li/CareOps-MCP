@@ -153,6 +153,14 @@ Real files `.env`, `.env.test`, `.env.prod` are gitignored.
 
 ## How to test (for customers / reviewers)
 
+**Unit tests (100% line and branch coverage)** — one command, no local Node or Python toolchain:
+
+```bash
+make test
+```
+
+That builds the unit-test image and runs `docker compose --profile test run --build --rm test`. The suite fails if TypeScript or Python coverage is below 100%.
+
 Start CareOS + OCR first (local quick start **or** `npm run docker:up`).  
 If you remapped host ports in `.env` (e.g. `13847` / `13850`), use those ports below.
 
@@ -376,6 +384,14 @@ CAREOS_SEED_ON_START=1 npm run docker:prod
 真實密鑰檔 `.env` / `.env.test` / `.env.prod` 已列入 `.gitignore`。
 
 ## 客戶／驗收如何測試
+
+**單元測試（行與分支覆蓋率 100%）** — 不需要本機安裝 Node / Python，一條指令：
+
+```bash
+make test
+```
+
+會建置測試映像並執行 `docker compose --profile test run --build --rm test`。覆蓋率低於 100% 時指令會失敗。
 
 先啟動 CareOS + OCR（本機或 `npm run docker:up`）。  
 若 `.env` 改過埠號（例如 `13847`），請用對應埠開啟。

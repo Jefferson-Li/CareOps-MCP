@@ -66,6 +66,16 @@ services:
     stdin_open: true
     tty: true
 
+  # Unit tests + coverage gate. Not started by `docker compose up`.
+  # `make test` or `docker compose --profile test run --build --rm test`
+  test:
+    profiles: ["test"]
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: careops-unit-test:local
+    working_dir: /app
+
 volumes:
   careos-data:
 

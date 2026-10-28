@@ -1,7 +1,17 @@
-const BASE = process.env.CAREOS_URL ?? "http://127.0.0.1:3847";
+import type {
+  CareDocument,
+  ClientRecord,
+  ComplianceItem,
+  PendingChange,
+  VisitSlot,
+} from "../shared/types.js";
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+export function careOsBaseUrl(): string {
+  return process.env.CAREOS_URL ?? "http://127.0.0.1:3847";
+}
+
+export async function careOsRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${careOsBaseUrl()}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -16,34 +26,31 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const careos = {
-  health: () => request<{ ok: boolean }>("/health"),
-  listClients: () => request<{ items: import("../shared/types.js").ClientRecord[] }>("/v1/clients"),
+  health: () => careOsRequest<{ ok: boolean }>("/health"),
+  listClients: () => careOsRequest<{ items: ClientRecord[] }>("/v1/clients"),
   getClient: (id: string) =>
-    request<import("../shared/types.js").ClientRecord>(`/v1/clients/${encodeURIComponent(id)}`),
-  listVisits: () => request<{ items: import("../shared/types.js").VisitSlot[] }>("/v1/visits"),
+    careOsRequest<ClientRecord>(`/v1/clients/${encodeURIComponent(id)}`),
+  listVisits: () => careOsRequest<{ items: VisitSlot[] }>("/v1/visits"),
   listCompliance: (openOnly = true) =>
-    request<{ items: import("../shared/types.js").ComplianceItem[] }>(
-      `/v1/compliance${openOnly ? "?open=1" : ""}`,
-    ),
-  listDocuments: () =>
-    request<{ items: import("../shared/types.js").CareDocument[] }>("/v1/documents"),
+    careOsRequest<{ items: ComplianceItem[] }>(`/v1/compliance${openOnly ? "?open=1" : ""}`),
+  listDocuments: () => careOsRequest<{ items: CareDocument[] }>("/v1/documents"),
   getDocument: (id: string) =>
-    request<import("../shared/types.js").CareDocument>(`/v1/documents/${encodeURIComponent(id)}`),
+    careOsRequest<CareDocument>(`/v1/documents/${encodeURIComponent(id)}`),
   extractDocument: (id: string) =>
-    request<import("../shared/types.js").CareDocument>(
-      `/v1/documents/${encodeURIComponent(id)}/extract`,
-      { method: "POST", body: "{}" },
-    ),
+    careOsRequest<CareDocument>(`/v1/documents/${encodeURIComponent(id)}/extract`, {
+      method: "POST",
+      body: "{}",
+    }),
   createPendingChange: (tool: string, payload: Record<string, unknown>) =>
-    request<import("../shared/types.js").PendingChange>("/v1/pending-changes", {
+    careOsRequest<PendingChange>("/v1/pending-changes", {
       method: "POST",
       body: JSON.stringify({ tool, payload }),
     }),
   applyPendingChange: (id: string) =>
-    request<{ change: import("../shared/types.js").PendingChange }>(
+    careOsRequest<{ change: PendingChange }>(
       `/v1/pending-changes/${encodeURIComponent(id)}/apply`,
       { method: "POST", body: "{}" },
     ),
   listPendingChanges: () =>
-    request<{ items: import("../shared/types.js").PendingChange[] }>("/v1/pending-changes"),
+    careOsRequest<{ items: PendingChange[] }>("/v1/pending-changes"),
 };

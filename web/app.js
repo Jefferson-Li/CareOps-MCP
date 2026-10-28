@@ -204,3 +204,18 @@ checkHealth().catch((err) => {
   setPill(ocrPill, false, "OCR unknown");
   log("Startup health failed", err instanceof Error ? err.message : String(err));
 });
+
+export {
+  log,
+  api,
+  setPill,
+  renderClients,
+  renderCompliance,
+  esc,
+  checkHealth,
+  loadLists,
+  runOcr,
+  runAddressFlow,
+  runRoster,
+  runAll,
+};

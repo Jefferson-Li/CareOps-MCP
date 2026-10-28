@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import * as z from "zod/v4";
 import { appendAudit, hashArgs } from "../shared/db.js";
+import { isDirectRun } from "../shared/entrypoint.js";
 import { assertToken } from "../security/pii.js";
 import { careos } from "../careos/client.js";
 import { checkComplianceGaps, searchClientContext } from "../pipelines/compliance.js";
@@ -45,7 +46,7 @@ async function audited<T>(tool: string, args: unknown, fn: () => Promise<T>) {
   }
 }
 
-function createServer(): McpServer {
+export function createServer(): McpServer {
   const server = new McpServer({
     name: "careops-mcp",
     version: "1.0.0",
@@ -218,5 +219,7 @@ const SYSTEM_MAP = `# CareOS system map (reverse-engineered)
 \`http://127.0.0.1:3847\` — see \`docs/system-map.md\` for full routes.
 `;
 
-void serveStdio(createServer);
-console.error("CareOps MCP server running on stdio (expects CareOS at CAREOS_URL)");
+if (isDirectRun(import.meta.url)) {
+  void serveStdio(createServer);
+  console.error("CareOps MCP server running on stdio (expects CareOS at CAREOS_URL)");
+}
