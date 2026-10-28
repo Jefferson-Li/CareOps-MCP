@@ -159,7 +159,7 @@ Real files `.env`, `.env.test`, `.env.prod` are gitignored.
 make test
 ```
 
-That builds the unit-test image and runs `docker compose --profile test run --build --rm test`. The suite fails if TypeScript or Python coverage is below 100%.
+That builds the unit-test image and runs `docker compose --profile test run --build --rm test`. The suite fails if TypeScript or Python coverage is below 100%. The test image takes Node and Python from their official images and does not run `apt`.
 
 Start CareOS + OCR first (local quick start **or** `npm run docker:up`).  
 If you remapped host ports in `.env` (e.g. `13847` / `13850`), use those ports below.
@@ -391,7 +391,7 @@ CAREOS_SEED_ON_START=1 npm run docker:prod
 make test
 ```
 
-會建置測試映像並執行 `docker compose --profile test run --build --rm test`。覆蓋率低於 100% 時指令會失敗。
+會建置測試映像並執行 `docker compose --profile test run --build --rm test`。覆蓋率低於 100% 時指令會失敗。測試映像直接使用官方 Node 與 Python 映像，建置時不執行 `apt`。
 
 先啟動 CareOS + OCR（本機或 `npm run docker:up`）。  
 若 `.env` 改過埠號（例如 `13847`），請用對應埠開啟。
