@@ -24,4 +24,5 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     CAREOS_DATA_DIR=/tmp/careos-test-data
 
-CMD ["npm", "run", "test:coverage"]
+# Keep the host coverage directory writable by the user who ran `make test`.
+CMD ["sh", "scripts/docker-test-entry.sh"]

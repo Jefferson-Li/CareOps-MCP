@@ -161,6 +161,15 @@ make test
 
 That builds the unit-test image and runs `docker compose --profile test run --build --rm test`. The suite fails if TypeScript or Python coverage is below 100%. The test image takes Node and Python from their official images and does not run `apt`.
 
+HTML reports are written on the host even when the gate fails:
+
+```bash
+make test
+make coverage-open
+```
+
+Open `coverage/index.html` in a browser. It links to `coverage/ts/index.html` (TypeScript and JavaScript) and `coverage/py/index.html` (Python). `make coverage-open` uses macOS `open`, or `xdg-open` on Linux. `coverage/` is gitignored.
+
 Start CareOS + OCR first (local quick start **or** `npm run docker:up`).  
 If you remapped host ports in `.env` (e.g. `13847` / `13850`), use those ports below.
 
@@ -392,6 +401,15 @@ make test
 ```
 
 會建置測試映像並執行 `docker compose --profile test run --build --rm test`。覆蓋率低於 100% 時指令會失敗。測試映像直接使用官方 Node 與 Python 映像，建置時不執行 `apt`。
+
+HTML 報告會寫到本機（未達 100% 時也會留下報告，但指令仍失敗）：
+
+```bash
+make test
+make coverage-open
+```
+
+用瀏覽器開啟 `coverage/index.html`。頁面連到 `coverage/ts/index.html`（TypeScript / JavaScript）與 `coverage/py/index.html`（Python）。`coverage/` 已列入 `.gitignore`。
 
 先啟動 CareOS + OCR（本機或 `npm run docker:up`）。  
 若 `.env` 改過埠號（例如 `13847`），請用對應埠開啟。
