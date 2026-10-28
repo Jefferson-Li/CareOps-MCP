@@ -9,9 +9,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     OCR_PORT=3850 \
     OCR_MODE=auto
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-       curl \
+# The official Python image already has CA certificates. Tesseract is not in
+# that image, so install it over HTTPS. Signatures stay enforced.
+RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
+  && apt-get update -o Acquire::Retries=3 \
+  && apt-get install -y -o Acquire::Retries=3 --no-install-recommends \
        tesseract-ocr \
        tesseract-ocr-eng \
   && rm -rf /var/lib/apt/lists/* \
@@ -28,6 +30,6 @@ COPY --chown=careops:careops samples ./samples
 USER careops
 EXPOSE 3850
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=5 \
-  CMD curl -fsS "http://127.0.0.1:${OCR_PORT:-3850}/health" || exit 1
+  CMD python -c "import os,sys,urllib.request; u='http://127.0.0.1:%s/health'%os.environ.get('OCR_PORT','3850'); sys.exit(0 if urllib.request.urlopen(u, timeout=4).status==200 else 1)"
 
 CMD ["python", "workers/ocr/app.py"]

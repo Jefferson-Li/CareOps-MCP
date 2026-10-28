@@ -7,10 +7,8 @@ ENV NODE_ENV=production \
     CAREOS_HOST=0.0.0.0 \
     CAREOS_PORT=3847
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl ca-certificates \
-  && rm -rf /var/lib/apt/lists/* \
-  && groupadd --system careops \
+# No apt. Node's fetch is the healthcheck client, and Node ships its own CA store.
+RUN groupadd --system careops \
   && useradd --system --gid careops --create-home careops
 
 COPY package.json package-lock.json ./
@@ -30,6 +28,6 @@ RUN chmod +x /entrypoint-careos.sh
 USER careops
 EXPOSE 3847
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=5 \
-  CMD curl -fsS "http://127.0.0.1:${CAREOS_PORT:-3847}/health" || exit 1
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.CAREOS_PORT||3847)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 ENTRYPOINT ["/entrypoint-careos.sh"]
