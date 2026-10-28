@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
-# Unit-test image only. The production CareOS and OCR images are unchanged.
-# Node and Python are copied from official images. This build does not run apt,
-# so it does not depend on plain-http Debian mirrors.
+# Unit-test image only. Node and Python come from official images.
+# This build does not run apt, so it does not use Debian mirrors.
 FROM node:22-bookworm-slim AS node
 
 FROM python:3.12-slim-bookworm

@@ -103,7 +103,7 @@ npm run ocr             # http://127.0.0.1:3850
 
 ## Quick start (Docker)
 
-Requires Docker Engine + Compose v2.
+Requires Docker Engine + Compose v2. Image builds do not use plain-http Debian apt. The CareOS image installs nothing with apt. The OCR image installs Tesseract from `https://deb.debian.org` (the Python base image already has CA certificates; package signatures stay checked).
 
 ```bash
 cp .env.example .env          # optional host port overrides
@@ -342,7 +342,7 @@ npm run ocr             # http://127.0.0.1:3850
 
 ## 快速開始（Docker）
 
-需安裝 Docker Engine + Compose v2。
+需安裝 Docker Engine + Compose v2。映像建置不使用明文 http 的 Debian apt。CareOS 映像不執行 apt；OCR 映像從 `https://deb.debian.org` 安裝 Tesseract（Python 基礎映像已含 CA 憑證，套件簽章仍會驗證）。
 
 ```bash
 cp .env.example .env          # 可選：調整對外埠號
