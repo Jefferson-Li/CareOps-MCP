@@ -1,5 +1,7 @@
 # CareOps MCP
 
+[![CI](https://github.com/Jefferson-Li/CareOps-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Jefferson-Li/CareOps-MCP/actions/workflows/ci.yml)
+
 Portfolio project for an **AI Engineer / Software Integrator** role in the **healthcare** industry:
 
 > Quickly map existing clinical systems, then ship production-ready Claude **MCP** tools that automate operational bottlenecks without disrupting daily care.
@@ -159,7 +161,7 @@ Real files `.env`, `.env.test`, `.env.prod` are gitignored.
 make test
 ```
 
-That builds the unit-test image and runs `docker compose --profile test run --build --rm test`. The suite fails if TypeScript or Python coverage is below 100%. The test image takes Node and Python from their official images and does not run `apt`.
+That builds the unit-test image and runs `docker compose --profile test run --build --rm test`. The suite fails if TypeScript or Python coverage is below 100%. The test image takes Node and Python from their official images and does not run `apt`. The same `make test` command runs in GitHub Actions on every pull request and on pushes to `main`.
 
 Start CareOS + OCR first (local quick start **or** `npm run docker:up`).  
 If you remapped host ports in `.env` (e.g. `13847` / `13850`), use those ports below.
