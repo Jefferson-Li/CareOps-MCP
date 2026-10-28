@@ -393,7 +393,7 @@ CAREOS_SEED_ON_START=1 npm run docker:prod
 make test
 ```
 
-會建置測試映像並執行 `docker compose --profile test run --build --rm test`。覆蓋率低於 100% 時指令會失敗。測試映像直接使用官方 Node 與 Python 映像，建置時不執行 `apt`。
+會建置測試映像並執行 `docker compose --profile test run --build --rm test`。覆蓋率低於 100% 時指令會失敗。測試映像直接使用官方 Node 與 Python 映像，建置時不執行 `apt`。GitHub Actions 在每個 pull request 以及推送到 `main` 時也會執行同一個 `make test`。
 
 先啟動 CareOS + OCR（本機或 `npm run docker:up`）。  
 若 `.env` 改過埠號（例如 `13847`），請用對應埠開啟。
